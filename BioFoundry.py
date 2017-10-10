@@ -1,6 +1,10 @@
-from bqplot import *
-from IPython.display import display
 import math
+import matplotlib.pyplot as plt
+
+class Plate (object):
+    
+    def __init__ (self, wells = 384):
+        self.wells = wells
 
 
 #PCR setup (Master mix)
@@ -10,7 +14,7 @@ def PCRsetup (NConst):
     NFrag = math.ceil(NConst/5) #Number of DNA fragments to process, the divisor is proportional to the complexity of the constrtucion
     NPrimer = NFrag * 2
     Vmm = NFrag * 5 #volume of PCR Master Mix in uL
-    Compmm = {'buffer': 0.2*Vmm, 'dNTPs' : 0.02*Vmm, 'polymerase' : 0.01*Vmm, 'water' : 0.77*Vmm}
+    #Compmm = {'buffer': 0.2*Vmm, 'dNTPs' : 0.02*Vmm, 'polymerase' : 0.01*Vmm, 'water' : 0.77*Vmm}
     NRes = math.ceil((Vmm+250)/2800) #number of reservoir wells needed
     #print("Number of fragments to PCR is " + str(NFrag))
     #print("Required volume of Master Mix is " + str(Vmm) + " ul")
@@ -21,7 +25,6 @@ def PCRsetup (NConst):
 #Echo
 def Echo (sourcewells,reaction):
     #all times in seconds if not defined otherwise
-    import math
     if reaction == "PCR": 
         NPlatesF = math.ceil(sourcewells[0]/96)  #Number of plates with PCR mixtures
         NPlatesP = math.ceil(sourcewells[1]/384) #Number of plates with primers
@@ -65,7 +68,6 @@ def ThermalCycler (Nplates,reaction):
 
 #Gibson Reaction Setup
 def Gibson (NFrag):
-    import math
     Vgibson = NFrag * 5 #in uL
     NRes = math.ceil((Vgibson+250)/2800) #numbrer of reservoir wells needed
     #print ("Required volume of Gibson Master Mix is " + str(Vgibson) + " uL.")
@@ -75,11 +77,10 @@ def Gibson (NFrag):
 #Transformation
 def Transformation (Ntrans):
     #All times in seconds
-    import math
     NplateT = math.ceil(Ntrans/96) #Number of plates with transformants
     T_thaw = 300 #Time of thawing the cells
     T_add = 300 #Time for cells distribution/plasmid/recovery media addition
-    T_plasmid = 300 #Time for plasmid addition
+    #T_plasmid = 300 #Time for plasmid addition
     T_incubation = 1800 #Incubation time
     T_heatshock = 45 #Heat shock time
     T_recovery = 3600 #Recovery time
@@ -92,41 +93,9 @@ def Costs (Vmm,Vgibson,NPlatesF,NPlatesG,NFrag):
     Totalcost = Price['PCR_MM']*Vmm + Price['Gibson_MM']*Vgibson + Price['96_well_plate']*(NPlatesF + NPlatesG) + Price['Primers']*2*NFrag
     return (Totalcost)
     
-#Creating plots
-def Plots (Lists):    
-
-    i=0
-
-    for List in Lists:
-        Titles = ['Time = f (Number of constructs)','Number of Gibson plates = f (Number of constructs)','Number of PCR Plates = f (Number of constructs)','Cost = f (Number of constructs)']
-        y_Labels = ['Time[h]','Number of Gibson plates','Number of PCR Plates','Cost [SGD]']
-
-        x_data = NConstList
-        y_data = List
-
-        x_sc = LinearScale()
-        y_sc = LinearScale()
-        
-        panzoom = PanZoom(scales={'x': [x_sc], 'y': [y_sc]})
-
-        ax_x = Axis(label='Number of constructs', scale=x_sc, tick_format='0.0f')
-        ax_y = Axis(label_offset='-50', label=y_Labels[i], scale=y_sc, orientation='vertical', tick_format='0.0f')
-
-        line = Lines(x=x_data,
-                     y=y_data,
-                     scales={'x': x_sc, 'y': y_sc},
-                     colors=['red', 'yellow'])
-
-        fig = Figure(axes=[ax_x, ax_y], marks=[line],title = Titles[i],interaction = panzoom)
-
-        display(fig)
-
-        i += 1
-
 
 #Controls
 def Control(NConst):
-    import math
     TTotal = 0
     PCRPar = PCRsetup(NConst)
     NPlatesF,Ttemp = Echo (PCRPar,"PCR")
@@ -140,6 +109,23 @@ def Control(NConst):
     TTotal += Transformation(NPlatesG)
     Totalcost = Costs(PCRPar[3],GibsonP[3],NPlatesF,NPlatesG,PCRPar[0])
     return (TTotal,NPlatesG,NPlatesF,Totalcost)
+
+def plot (Lists):    
+
+    i=0
+    y_Labels = ['Time[h]','Number of Gibson plates','Number of PCR Plates','Cost [SGD]']
+    Titles = ['Time = f (Number of constructs)','Number of Gibson plates = f (Number of constructs)','Number of PCR Plates = f (Number of constructs)','Cost = f (Number of constructs)']
+    
+    for List in Lists:
+
+        fig, ax = plt.subplots()
+        ax.plot(NConstList,List)
+        ax.set(xlabel='Number of constructs [U]', ylabel=y_Labels[i],
+               title=Titles[i])
+        ax.grid()
+        plt.show()
+        
+        i += 1
 
 N_Const = 10000    # Number of constructs
 Control_variables = Control(N_Const)
@@ -160,5 +146,4 @@ for N_Const in NConstList:
 
 Lists = [TimeList,GibsonPlateList,PCRPlateList,CostList]
 
-Plots(Lists)
-
+plot(Lists)
