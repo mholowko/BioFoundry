@@ -53,6 +53,9 @@ class Liquid_Handler2 (object):
     
     def decompress():
         pass
+    
+    def additional():
+        pass
 
 
 
