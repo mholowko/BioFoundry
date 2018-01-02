@@ -235,11 +235,13 @@ Opentrons.transfer(PrimerPlate4,ECHOPlate.wells(d),10)
 #Transfer of primers from ECHO plate to PCR plate
 Echo.transfer(ECHOPlate,PCRPlate,2.5)
 
-
+#Transfer of PCR mixture to respective plates
 Opentrons.transfer(PCRPlate.wells(a),PCRPlate1,10)
 Opentrons.transfer(PCRPlate.wells(b),PCRPlate2,10)
 Opentrons.transfer(PCRPlate.wells(c),PCRPlate3,10)
 Opentrons.transfer(PCRPlate.wells(d),PCRPlate4,10)
+
+#Performing PCR reactions for each plate
 Thermalcycler.PCR(PCRPlate1)
 Thermalcycler.PCR(PCRPlate2)
 Thermalcycler.PCR(PCRPlate3)
