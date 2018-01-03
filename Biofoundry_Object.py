@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Oct 10 13:17:56 2017
-
-@author: mholowko & yvonnefoo
+@author: bchhmb
 """
 
 import math
@@ -61,7 +60,7 @@ class Liquid_Handler2 (object):
         source_plate.time = source_plate.filled_wells / self.channels * self.well_processing_time
         source_plate.status = 'liquid transferred'
         destination_plate.addvolume(volume)
-        destination_plate.time = source_plate.filled_wells / self.channels * self.well_processing_time
+        destination_plate.time += source_plate.filled_wells / self.channels * self.well_processing_time
         destination_plate.status = 'filled'
 
      
@@ -70,10 +69,10 @@ class Liquid_Handler2 (object):
             volume = int(input('Incorrect transfer value. Please input the correct number: '))
         destination_plate.filled_wells = source_plate.filled_wells
         source_plate.removevolume(volume)
-        source_plate.time = source_plate.filled_wells / self.channels * self.well_processing_time
+        source_plate.time += source_plate.filled_wells / self.channels * self.well_processing_time
         source_plate.status = ''
         destination_plate.addvolume(volume)
-        destination_plate.time = source_plate.filled_wells / self.channels * self.well_processing_time
+        destination_plate.time += source_plate.filled_wells / self.channels * self.well_processing_time
         destination_plate.status = ''
         
     
@@ -99,11 +98,11 @@ class Liquid_Handler2 (object):
             compressed_plates.append(CompressedPlate)
         for plate in source_plates:
             plate.removevolume(volume)
-            plate.time = plate.filled_wells / self.channels * self.well_processing_time + self.plate_change_time
+            plate.time += plate.filled_wells / self.channels * self.well_processing_time + self.plate_change_time
             plate.status = 'compressed'
         for i in compressed_plates:
             i.addvolume(volume)
-            plate.time = plate.filled_wells / self.channels * self.well_processing_time + self.plate_change_time
+            plate.time += plate.filled_wells / self.channels * self.well_processing_time + self.plate_change_time
             plate.status = 'new'
         return compressed_plates 
     
@@ -126,11 +125,11 @@ class Liquid_Handler2 (object):
             DecompessedPlate = Plate ('DecompressedPlate ' + str(i), new_plate_wells, tofill[i]  ,50,0)
             decompressed_plates.append(DecompessedPlate)
         source_plate.removevolume(volume)
-        source_plate.time = source_plate.filled_wells / self.channels * self.well_processing_time + self.plate_change_time
+        source_plate.time += source_plate.filled_wells / self.channels * self.well_processing_time + self.plate_change_time
         source_plate.status = 'decompressed'
         for plate in decompressed_plates:
             plate.addvolume(volume)
-            plate.time = source_plate.filled_wells / self.channels * self.well_processing_time + self.plate_change_time
+            plate.time += source_plate.filled_wells / self.channels * self.well_processing_time + self.plate_change_time
             plate.status = 'new'
         return decompressed_plates    
     
@@ -160,6 +159,48 @@ def plot (Lists):
 
 
 
+#PCR_reactions_list = range (10,10010,10)
+#TotalTimeList = []
+#for PCR_reactions in PCR_reactions_list:
+#
+#    PCR_plate_size = 96   
+#    PCR_plate_number = math.ceil(PCR_reactions/PCR_plate_size)
+#    Complexity = PCR_reactions / PCR_reactions
+#    
+#    Opentron = Liquid_Handler2(8,1,10)
+#    Echo =  Liquid_Handler2(1,1,10)
+#    Thermalcycler = Thermal_Cycler()
+#    TotalTime = 0
+#
+#    
+#    for i in range(0,PCR_plate_number):
+#        PrimerPlate = Plate('PrimerPlate',384,384,50,50)
+#        MasterMixPlate = Plate('MasterMixPlate',6,1,5000,5000) 
+#        PCRPlate = Plate('PCRPlate',384,0,50,0,'PCR not done')
+#    
+#        UsedPlatesList = []
+#        
+#        Opentron.fillplate(MasterMixPlate, PCRPlate, 384 ,10)
+#        UsedPlatesList.append(MasterMixPlate)
+#        
+#        Echo.transfer(PrimerPlate, PCRPlate, 0.5)
+#        UsedPlatesList.append(PrimerPlate)
+#        
+#        Thermalcycler.PCR(PCRPlate,120*60)
+#        UsedPlatesList.append(PCRPlate)
+#        
+#        
+#        
+#        for plate in UsedPlatesList:
+#            TotalTime += plate.time
+#        
+#    print('Total running time is ' + str(math.ceil(TotalTime/60)) + " min")
+#    TotalTimeList.append(TotalTime/60)
+#    
+#
+#plot ([TotalTimeList])
+
+
 PCR_reactions_list = range (10,10010,10)
 TotalTimeList = []
 for PCR_reactions in PCR_reactions_list:
@@ -175,106 +216,59 @@ for PCR_reactions in PCR_reactions_list:
 
     
     for i in range(0,PCR_plate_number):
-        PrimerPlate = Plate('PrimerPlate',384,384,50,50)
-        MasterMixPlate = Plate('MasterMixPlate',6,1,5000,5000) 
-        PCRPlate = Plate('PCRPlate',384,0,50,0,'PCR not done')
-    
+        MasterMixPlate = Plate('MasterMixPlate',6,1,10000,10000)
+        PCRPlate = Plate('PCRPlate',384,0,50,0)
+        PrimerPlateA = Plate('PrimerPlateA',96,96,360,100)
+        PrimerPlateB = Plate('PrimerPlateB',96,96,360,100)
+        PrimerPlateC = Plate('PrimerPlateC',96,96,360,100)
+        PrimerPlateD = Plate('PrimerPlateD',96,96,360,100)
+        ECHOPlatePrimer = Plate('ECHOPlatePrimer', 384,0,65,0)
+        AnalysisPlateA = Plate('AnalysisPlateA',96,0,360,0)
+        AnalysisPlateB = Plate('AnalysisPlateB',96,0,360,0)
+        AnalysisPlateC = Plate('AnalysisPlateC',96,0,360,0)
+        AnalysisPlateD = Plate('AnalysisPlateD',96,0,360,0)
+        
         UsedPlatesList = []
         
-        Opentron.fillplate(MasterMixPlate, PCRPlate, 384 ,10)
+        #Distribution of Master Mix
+        Opentron.fillplate(MasterMixPlate,PCRPlate,384,10)
         UsedPlatesList.append(MasterMixPlate)
         
-        Echo.transfer(PrimerPlate, PCRPlate, 0.5)
-        UsedPlatesList.append(PrimerPlate)
+        #Transferring Primers to ECHO plate
+        Opentron.transfer(PrimerPlateA,ECHOPlatePrimer,10)
+        UsedPlatesList.append(PrimerPlateA)
+        Opentron.transfer(PrimerPlateB,ECHOPlatePrimer,10)
+        UsedPlatesList.append(PrimerPlateB)
+        Opentron.transfer(PrimerPlateC,ECHOPlatePrimer,10)
+        UsedPlatesList.append(PrimerPlateC)
+        Opentron.transfer(PrimerPlateD,ECHOPlatePrimer,10)
+        UsedPlatesList.append(PrimerPlateD)
         
-        Thermalcycler.PCR(PCRPlate,120*60)
+        #Transfer of primers from ECHO plate to PCR plate
+        Echo.transfer(ECHOPlatePrimer,PCRPlate,2)
+        UsedPlatesList.append(ECHOPlatePrimer)
+        
+        #Performing PCR reactions for each plate
+        Thermalcycler.PCR(PCRPlate, 3600)
         UsedPlatesList.append(PCRPlate)
         
-        
-        
+        #Transfer of PCR mixture to respective plates
+        Opentron.transfer(PCRPlate,AnalysisPlateA,2)
+        UsedPlatesList.append(AnalysisPlateA)
+        Opentron.transfer(PCRPlate,AnalysisPlateB,2)
+        UsedPlatesList.append(AnalysisPlateB)
+        Opentron.transfer(PCRPlate,AnalysisPlateC,2)
+        UsedPlatesList.append(AnalysisPlateC)
+        Opentron.transfer(PCRPlate,AnalysisPlateD,2)
+        UsedPlatesList.append(AnalysisPlateD)
+
+        for p in UsedPlatesList: print (str(p.name) + ' ' + str (p.time))
         for plate in UsedPlatesList:
             TotalTime += plate.time
         
-    print('Total running time is ' + str(math.ceil(TotalTime/60)) + " min")
-    TotalTimeList.append(TotalTime/60)
+        print('Total running time is ' + str(math.ceil(TotalTime/60)) + " min")
+    TotalTimeList.append(TotalTime/3600)
     
-
+print (TotalTimeList)
 plot ([TotalTimeList])
-
-
-
-
-
-
-##Start of the process, all the starting parameters
-#PrimerPlate = Plate('PrimerPlate',384,150,50,50)
-#MasterMixPlate = Plate('MasterMixPlate',6,1,2800,2800) 
-#PCRPlate = Plate('PCRPlate',384,0,50,0,'PCR not done')
-#Opentron = Liquid_Handler2(8,1,10)
-#Echo =  Liquid_Handler2(1,1,10)
-#Thermalcycler = Thermal_Cycler()
-#UsedPlatesList = []
-#TotalTime = 0
-#
-##Example run
-#
-#Opentron.fillplate(MasterMixPlate, PCRPlate, 150,10)
-#UsedPlatesList.append(MasterMixPlate)
-#
-#Echo.transfer(PrimerPlate, PCRPlate, 0.5)
-#UsedPlatesList.append(PrimerPlate)
-#
-#Thermalcycler.PCR(PCRPlate,120*60)
-#UsedPlatesList.append(PCRPlate)
-#
-#
-#
-#for plate in UsedPlatesList:
-#    TotalTime += plate.time
-#    
-#print('Total running time is ' + str(math.ceil(TotalTime/60)) + " min")
-
-
-
-
-
-
-#TESTING
-
-#print(PrimerPlate.TotalVolume)
-#
-#
-#print('PCRPlate before Echo ' + str(PCRPlate.filled_wells) + ' ' + str(PCRPlate.volume))
-#print('PrimerPlate before Echo ' + str(PrimerPlate.filled_wells) + ' ' + str(PrimerPlate.volume))
-#
-#Echo.transfer(PrimerPlate,PCRPlate,40)
-#
-#print('PCRPlate after Echo ' + str(PCRPlate.filled_wells) + ' ' + str(PCRPlate.volume))
-#print('PrimerPlate after Echo ' + str(PrimerPlate.filled_wells) + ' ' + str(PrimerPlate.volume))
-#
-#
-#NewPlate = Plate('NewPlate',384,200,50,50)
-#
-#Decompressedplates = Opentron.decompress(NewPlate, 96, 20)
-#
-#
-#print('NewPlate after Decompression ' + str(NewPlate.filled_wells) + ' ' + str(NewPlate.volume))
-#for i in Decompressedplates:
-#    print(str(i.name) + ' after Decompression ' + str(i.filled_wells) + ' ' + str(i.volume))
-#    
-#
-#Compressedplates = Opentron.compress(Decompressedplates, 184, 10)
-#
-#for i in Decompressedplates:
-#    print(str(i.name) + ' after Compression ' + str(i.filled_wells) + ' ' + str(i.volume))
-#
-#for i in Compressedplates:
-#    print(str(i.name) + ' after Compression ' + str(i.filled_wells) + ' ' + str(i.volume))
-#
-#print (PCRPlate.time)
-#
-#Thermalcycler.PCR(PCRPlate,120)
-#
-#print (PCRPlate.status)
-#print (PCRPlate.time)
 
